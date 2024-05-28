@@ -26,31 +26,50 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyAppState extends ChangeNotifier {
-  var current = WordPair.random();
-
-  void getNext() {
-    current = WordPair.random();
-    notifyListeners();
-  }
-}
+class MyAppState extends ChangeNotifier {}
 
 class MyHomePage extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  MyHomePageState createState() => MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class MyHomePageState extends State<MyHomePage> {
+  // controllers
   TextEditingController _recipientsController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
   TextEditingController _batchSizeController = TextEditingController();
+
+  // defaults
   List<String> recipients = [];
   int batchSize = 10;
+  String errorMessage = "";
 
   void _convertToRecipients(String input) {
+    // converts the input of comma separated numbers into a List
     setState(() {
       recipients = input.split(',').map((s) => s.trim()).toList();
     });
+  }
+
+  bool _isValidListOfPhoneNumbers(List<String> recipients) {
+    // a regex validation of the supplied recipient numbers.
+    bool isValid = true;
+    List<String> badNumbers = [];
+    final RegExp phoneRegExp = RegExp(
+        r'^\+?(\d{1,3})?[-. ]?(\(?\d{1,4}\)?)?[-. ]?\d{1,4}[-. ]?\d{1,4}[-. ]?\d{1,9}$'
+    );
+
+    recipients.forEach((recipientNumber) {
+      if (!phoneRegExp.hasMatch(recipientNumber)) {
+        isValid = false;
+        badNumbers.add(recipientNumber);
+      }
+    });
+    if (!isValid) {
+      // generate an error message.
+      errorMessage = "Bad format on the following recipient numbers: ${badNumbers}";
+    }
+    return isValid;
   }
 
   void _sendSMS(String message, List<String> recipients) async {
@@ -79,7 +98,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var pair = appState.current;
     final theme = Theme.of(context);
     final textStyle = theme.textTheme.displayMedium!.copyWith(
       color: Colors.white,
@@ -157,9 +175,19 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 70,
               child: ElevatedButton(
                 onPressed: () {
-                  appState.getNext();
                   String message = _messageController.text;
-                  _sendSMS(message, List.from(recipients));
+                  if (_isValidListOfPhoneNumbers(recipients)) {
+                    // valid numbers, SEND THE SPAM
+                    _sendSMS(message, List.from(recipients));
+                  }
+                  else {
+                    // display the error message.
+                    final snackBar = SnackBar(
+                      content: Text(errorMessage),
+                      backgroundColor: Colors.black,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
