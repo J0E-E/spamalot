@@ -43,7 +43,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _recipientsController = TextEditingController();
   TextEditingController _messageController = TextEditingController();
+  TextEditingController _batchSizeController = TextEditingController();
   List<String> recipients = [];
+  int batchSize = 10;
 
   void _convertToRecipients(String input) {
     setState(() {
@@ -53,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _sendSMS(String message, List<String> recipients) async {
     while (recipients.isNotEmpty) {
-      int batchSize = 10;
       List<String> batch = recipients.length > batchSize
           ? recipients.sublist(0, batchSize)
           : recipients.sublist(0, recipients.length);
@@ -67,6 +68,12 @@ class _MyHomePageState extends State<MyHomePage> {
         print(onError);
       }
     }
+  }
+
+  void _updateBatchSize(String input) {
+    setState(() {
+      batchSize = int.tryParse(input) ?? 10;
+    });
   }
 
   @override
@@ -126,6 +133,20 @@ class _MyHomePageState extends State<MyHomePage> {
                       fillColor: Colors.white,
                       border: OutlineInputBorder(),
                     ),
+                  ),
+                  SizedBox(height: 20),
+                  TextField(
+                    controller: _batchSizeController,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Enter batch size',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (text) {
+                      _updateBatchSize(text);
+                    },
                   ),
                 ],
               ),
