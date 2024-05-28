@@ -1,16 +1,12 @@
 # spamalot
 
-A new Flutter project.
+A flutter project for batching mass SMS messages. 
 
-## Getting Started
+- add a comma-separated list of phone numebrs.
+- add a message string
+- set the batch size.
+- click spamALOT
 
-This project is a starting point for a Flutter application.
+The app will stage each succesive message to be sent, you just click send. 
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Due to programatic restraints with iOS, it's not possible to auto-send the messages. 
