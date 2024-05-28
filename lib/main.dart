@@ -35,7 +35,40 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  TextEditingController _recipientsController = TextEditingController();
+  TextEditingController _messageController = TextEditingController();
+  List<String> recipients = [];
+
+  void _convertToRecipients(String input) {
+    setState(() {
+      recipients = input.split(',').map((s) => s.trim()).toList();
+    });
+  }
+
+  void _sendSMS(String message, List<String> recipients) async {
+    while (recipients.isNotEmpty) {
+      int batchSize = 10;
+      List<String> batch = recipients.length > batchSize
+          ? recipients.sublist(0, batchSize)
+          : recipients.sublist(0, recipients.length);
+
+      recipients.removeRange(0, batch.length);
+
+      try {
+        String _result = await sendSMS(message: message, recipients: batch);
+        print(_result);
+      } catch (onError) {
+        print(onError);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -45,84 +78,67 @@ class MyHomePage extends StatelessWidget {
       color: Colors.white,
     );
 
-    // set your recipients here.
-    List<String> recipients = [
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-      "8136903843",
-      "8136990142",
-    ];
-
-    String message = "Test Message";
-
-    void _sendSMS(String message, List<String> recipients) async {
-      while (recipients.isNotEmpty) {
-        // Adjust this for your batch size.
-        int batchSize = 10;
-        // Get the first N (or fewer) recipients
-        List<String> batch = recipients.length > batchSize
-            ? recipients.sublist(0, batchSize)
-            : recipients.sublist(0, recipients.length);
-
-        // Remove the first 10 (or fewer) recipients from the original list
-        recipients.removeRange(0, batch.length);
-
-        try {
-          String _result = await sendSMS(message: message, recipients: batch);
-          print(_result);
-        } catch (onError) {
-          print(onError);
-        }
-      }
-    }
-
     return Scaffold(
       backgroundColor: Colors.red,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Container(
+              padding: EdgeInsets.all(16.0),
+              width: 320,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 100, // Make the height more square-like
+                    child: TextField(
+                      controller: _recipientsController,
+                      maxLines: null,
+                      expands: true,
+                      decoration: InputDecoration(
+                        labelText: 'Enter comma-separated phone numbers',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (text) {
+                        _convertToRecipients(text);
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  TextField(
+                    controller: _messageController,
+                    decoration: InputDecoration(
+                      labelText: 'Enter your message',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
             SizedBox(
               width: 250,
               height: 70,
               child: ElevatedButton(
                 onPressed: () {
                   appState.getNext();
-                  _sendSMS(message, recipients);
+                  String message = _messageController.text;
+                  _sendSMS(message, List.from(recipients));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
