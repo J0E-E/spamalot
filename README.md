@@ -2,7 +2,7 @@
 
 A flutter project for batching mass SMS messages. 
 
-- add a comma-separated list of phone numebrs.
+- add a comma-separated list of phone numbers.
 - add a message string
 - set the batch size.
 - click spamALOT
